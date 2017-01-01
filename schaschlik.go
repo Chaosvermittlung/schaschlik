@@ -2,76 +2,37 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"net"
 	"os"
+	"path/filepath"
+
+	"fmt"
+
+	"github.com/chaosvermittlung/schaschlik/config"
+	"github.com/chaosvermittlung/schaschlik/irc"
+	"github.com/chaosvermittlung/schaschlik/writer"
 )
 
-const (
-	CONN_PORT = "2342"
-	CONN_TYPE = "tcp"
-)
-
-var size = flag.Int("size", 1024, "Maxim payload per connection")
-var path = flag.String("path", "test", "Path to write")
+var configpath = flag.String("configpath", "", "Path to the config (default is executable folder)")
 
 func main() {
-	// Listen for incoming connections.
 	flag.Parse()
-	var messages = make(chan string)
-	go printRequest(messages)
-	l, err := net.Listen(CONN_TYPE, ":"+CONN_PORT)
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		fmt.Println("Error listening:", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
-	// Close the listener when the application closes.
-	defer l.Close()
-	fmt.Println("Listening on :" + CONN_PORT)
-	for {
-		// Listen for an incoming connection.
-		conn, err := l.Accept()
-		if err != nil {
-			fmt.Println("Error accepting: ", err.Error())
-			os.Exit(1)
-		}
-		// Handle connections in a new goroutine.
-		go handleRequest(conn, messages)
+	execdir := dir + "/"
+	if *configpath == "" {
+		*configpath = execdir + "config.json"
 	}
-}
-
-// Handles incoming requests.
-func handleRequest(conn net.Conn, messages chan string) {
-	// Make a buffer to hold incoming data.
-	buf := make([]byte, *size)
-	// Read the incoming connection into the buffer.
-	_, err := conn.Read(buf)
+	fmt.Println(*configpath)
+	conf, err := config.LoadConfig(*configpath)
 	if err != nil {
-		fmt.Println("Error reading:", err.Error())
-	} else {
-		messages <- string(buf)
+		log.Fatal("Error loading config:", err)
 	}
-	// Send a response back to person contacting us.
-	conn.Write([]byte("Message received."))
-	// Close the connection when you're done with it.
-	conn.Close()
-}
-
-func printRequest(messages chan string) {
+	writer.Setup(conf)
+	//server.Setup(conf)
+	irc.Setup(conf.IRCs)
 	for {
-		m := <-messages
-		fmt.Println("Message", messages)
-		fmt.Println("path", *path)
-		f, err := os.OpenFile(*path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = f.WriteString(m)
-		if err != nil {
-			log.Fatal(err)
-		}
-		f.Close()
 	}
 }

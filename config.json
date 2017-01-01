@@ -1,0 +1,15 @@
+{
+    "Type":"tcp",
+    "Port":"2342",
+    "Path":"test.txt",
+    "Size":1024,
+    "IRCs":
+    [
+        {
+            "Nick":"Feldengel",
+            "Username":"Chaosvermittlung",
+            "Adress":"irc.hackint.org:6667",
+            "Channel":"#bktest"
+        }
+    ]
+}
