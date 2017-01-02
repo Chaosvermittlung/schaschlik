@@ -10,6 +10,7 @@ import (
 
 	"github.com/chaosvermittlung/schaschlik/config"
 	"github.com/chaosvermittlung/schaschlik/irc"
+	"github.com/chaosvermittlung/schaschlik/server"
 	"github.com/chaosvermittlung/schaschlik/writer"
 )
 
@@ -31,7 +32,7 @@ func main() {
 		log.Fatal("Error loading config:", err)
 	}
 	writer.Setup(conf)
-	//server.Setup(conf)
+	server.Setup(conf.Servers)
 	irc.Setup(conf.IRCs)
 	for {
 	}

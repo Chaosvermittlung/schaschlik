@@ -15,13 +15,18 @@ type IRCConn struct {
 	SkipVerify bool
 }
 
-//Config is the struct to configure the Server
-type Config struct {
+//Server is the struct to define a tcp or udp Listener to send messages to
+type Server struct {
 	Type string
 	Port string
-	Path string
 	Size int
-	IRCs []IRCConn
+}
+
+//Config is the struct to configure the Server
+type Config struct {
+	Path    string
+	Servers []Server
+	IRCs    []IRCConn
 }
 
 //LoadConfig loads a Config from a Path and gives back the Config struct

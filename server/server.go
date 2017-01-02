@@ -10,25 +10,26 @@ import (
 	"github.com/chaosvermittlung/schaschlik/writer"
 )
 
-var listener net.Listener
 var size int
 
 //Setup takes a confi.Config and Setups the TCP/UDP Server
-func Setup(conf config.Config) {
+func Setup(servers []config.Server) {
 	// Listen for incoming connections.
-	var err error
-	listener, err = net.Listen(conf.Type, ":"+conf.Port)
-	if err != nil {
-		log.Fatal("Error listening:", err.Error())
+	for _, s := range servers {
+		fmt.Println(s.Type, s.Port, s.Size)
+		listener, err := net.Listen(s.Type, ":"+s.Port)
+		if err != nil {
+			log.Fatal("Error listening:", err.Error())
+		}
+		// Close the listener when the application closes.
+		defer listener.Close()
+		log.Println("Listening on :" + s.Port)
+		size = s.Size
+		go acceptConns(listener)
 	}
-	// Close the listener when the application closes.
-	defer listener.Close()
-	log.Println("Listening on :" + conf.Port)
-	size = conf.Size
-	go acceptConns()
 }
 
-func acceptConns() {
+func acceptConns(listener net.Listener) {
 	for {
 		// Listen for an incoming connection.
 		conn, err := listener.Accept()
